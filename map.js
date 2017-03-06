@@ -3,9 +3,11 @@ Map = function(w, h){
     this.w = w;
     this.h = h;
     this.layers = {};
+    this.mobs = [];
     this.clear('cells');
     this.clear('visibility');
     this.clear('color');
+    this.clear('mobs');
 
     var spriteWeights = {
         1: 10,
@@ -13,6 +15,7 @@ Map = function(w, h){
         3: 1,
         4: 1
     };
+    var directionWeights = { N: 1, S: 1, E: 1, W: 1 };
 
     var map = new ROT.Map.Cellular(w, h);
     map.randomize(0.5);
@@ -31,6 +34,13 @@ Map = function(w, h){
             this.layers.cells[n] = 'front' + ROT.RNG.getWeightedValue(spriteWeights);
 
     this.makeFov();
+
+    for(var n=0; n<64; n++){
+        var point = this.random(function(x, y){ return that.empty(x, y); });
+        var mob = new Enemy('skeleton');
+        this.set(point[0], point[1], mob, 'mobs');
+        this.mobs.push(mob);
+    }
 };
 
 Map.prototype.clear = function(layer){
@@ -56,13 +66,17 @@ Map.prototype.set = function(x, y, v, layer){
     this.layers[layer || 'cells'][x+y*this.w] = v;
 };
 
+Map.prototype.empty = function(x, y){
+    return this.get(x, y).match('^floor') && !this.get(x, y, 'mobs');
+};
+
 Map.prototype.random = function(fn){
-    var point = [ROT.RNG.getUniformInt(0,this.w),
-                 ROT.RNG.getUniformInt(0,this.h)];
+    var point = [ROT.RNG.getUniformInt(0,this.w-1),
+                 ROT.RNG.getUniformInt(0,this.h-1)];
     if(fn)
         while(!fn(point[0], point[1]))
-            point = [ROT.RNG.getUniformInt(0,this.w),
-                     ROT.RNG.getUniformInt(0,this.h)];
+            point = [ROT.RNG.getUniformInt(0,this.w-1),
+                     ROT.RNG.getUniformInt(0,this.h-1)];
     return point;
 };
 

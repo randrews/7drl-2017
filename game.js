@@ -2,12 +2,11 @@ Game = {}
 
 Game.init = function(){
     Game.map = new Map(64, 64);
+    Game.player = Game.map.random(function(x,y){ return Game.map.empty(x,y); });
+    Game.lastPlayerDirection = 'S';
+    Game.map.updateVisibility(Game.player[0], Game.player[1]);
     Game.display = new Display(Game.map);
     window.addEventListener('keydown', Game);
-    Game.player = Game.map.random(function(x,y){ return Game.map.get(x,y).match('^floor'); });
-    Game.lastPlayerDirection = 'S';
-    Game.display.scroll(null);
-    Game.map.updateVisibility(Game.player[0], Game.player[1]);
 }
 
 Game.handleEvent = function(event) {

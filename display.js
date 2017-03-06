@@ -13,12 +13,18 @@ Display = function(map) {
     Display.opts.tileSet.onload = function(){ that.draw() };
 
     this.playerFrame = 1;
+    this.tick = 0;
     this.animation = setInterval(function() {
-        that.playerFrame = (that.playerFrame + 1) % 2;
-        that.drawPlayer();
-    }, 500);
+        that.tick = (that.tick + 1) % 10;
+        if(that.tick % 5 == 0)
+            that.playerFrame = (that.playerFrame + 1) % 2;
+        
+        for(var i=0; i<that.map.mobs.length; i++) that.map.mobs[i].animate(that.tick);
+        that.draw();
+    }, 100);
 
-    this.origin = [0,0];
+    this.origin = [];
+    this.scroll();
 };
 
 Display.opts = { width: 0,
@@ -50,6 +56,15 @@ Display.opts = { width: 0,
                      'playerN1': [256, 160],
                      'playerW0': [288, 128],
                      'playerW1': [288, 160],
+
+                     'skeletonE0': [192, 192],
+                     'skeletonE1': [192, 224],
+                     'skeletonS0': [224, 192],
+                     'skeletonS1': [224, 224],
+                     'skeletonN0': [256, 192],
+                     'skeletonN1': [256, 224],
+                     'skeletonW0': [288, 192],
+                     'skeletonW1': [288, 224],
                  }
                };
 
@@ -71,21 +86,20 @@ Display.prototype.draw = function(){
     for(var x=this.origin[0]; x < this.origin[0] + Display.opts.width; x++)
         for(var y=this.origin[1]; y < this.origin[1] + Display.opts.height; y++) {
             if(this.map.get(x, y, 'visibility') == 1) {
-                var color = this.map.get(x, y, 'color') || [100,100,100];
-                //var color = ROT.Color.multiply(lightColor, [100,100,100]);
-                color = 'rgba(' + color.join(',') + ',0.1)';
-                this.display.draw(x - this.origin[0], y - this.origin[1], this.map.get(x, y), color, color);
+                var color = 'rgba(' + this.map.get(x, y, 'color').join(',') + ',0.1)';
+                var mob = this.map.get(x, y, 'mobs');
+
+                if(mob)
+                    this.display.draw(x - this.origin[0], y - this.origin[1], [this.map.get(x, y), mob.mobSprite()], 'transparent', color);
+                else
+                    this.display.draw(x - this.origin[0], y - this.origin[1], [this.map.get(x, y)], color);
             } else if(this.map.get(x, y, 'visibility') == 2) {
-                this.display.draw(x - this.origin[0], y - this.origin[1], this.map.get(x, y), 'rgba(0,0,0,0.5)');
+                this.display.draw(x - this.origin[0], y - this.origin[1], this.map.get(x, y), 'rgba(0,0,0,0.65)');
             } else {
                 this.display.draw(x - this.origin[0], y - this.origin[1], this.map.get(x, y), 'rgba(0,0,0,1)');
             }
         }
 
-    this.drawPlayer();
-};
-
-Display.prototype.drawPlayer = function(){
     this.display.draw(Game.player[0] - this.origin[0], Game.player[1] - this.origin[1],
                       [this.map.get(Game.player[0], Game.player[1]),
                        this.playerSprite()], 'transparent', 'rgba(255,255,160,0.1)');
