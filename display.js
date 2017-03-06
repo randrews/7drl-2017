@@ -10,7 +10,7 @@ Display = function(map) {
         that.scroll();
         that.draw();
     });
-    Display.opts.tileSet.onload = function(){ that.draw() };
+    Display.opts.tileSet.onload = function(){ that.draw(); Game.engine.start(); };
 
     this.playerFrame = 1;
     this.tick = 0;
@@ -18,8 +18,8 @@ Display = function(map) {
         that.tick = (that.tick + 1) % 10;
         if(that.tick % 5 == 0)
             that.playerFrame = (that.playerFrame + 1) % 2;
-        
-        for(var i=0; i<that.map.mobs.length; i++) that.map.mobs[i].animate(that.tick);
+
+        that.map.eachMob(function(mob){mob.animate(that.tick);});
         that.draw();
     }, 100);
 

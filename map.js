@@ -58,6 +58,10 @@ Map.prototype.each = function(fn, layer){
             fn(x, y, this.layers[layer || 'cells'][x+y*this.w]);
 };
 
+Map.prototype.eachMob = function(fn){
+    for(var n=0; n < this.mobs.length; n++) fn(this.mobs[n]);
+};
+
 Map.prototype.get = function(x, y, layer){
     return this.layers[layer || 'cells'][x+y*this.w];
 };
@@ -99,6 +103,7 @@ Map.prototype.updateVisibility = function(px, py){
 
     this.fov.compute(px, py, 10, function(x, y, r, visibility) {
         that.set(x, y, 1, 'visibility');
+        if(that.get(x,y,'mobs')) that.get(x,y,'mobs').active = true;
     });
 
     this.lighting.clearLights();

@@ -3,6 +3,8 @@ Enemy = function(sprite) {
     this.frame = ROT.RNG.getUniformInt(0,1);
     this.frameClock = ROT.RNG.getUniformInt(0,9);
     this.direction = ['N', 'S', 'E', 'W'].random();
+    this.active = false;
+    this.id = ROT.RNG.getUniformInt(0,1000);
 };
 
 Enemy.prototype.mobSprite = function() {
@@ -12,4 +14,8 @@ Enemy.prototype.mobSprite = function() {
 Enemy.prototype.animate = function(tick) {
     if(tick == this.frameClock)
         this.frame = (this.frame + 1) % 2;
-}
+};
+
+Enemy.prototype.act = function() {
+    console.log('Enemy ' + this.id + ' acting');
+};
