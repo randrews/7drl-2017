@@ -17,5 +17,10 @@ Enemy.prototype.animate = function(tick) {
 };
 
 Enemy.prototype.act = function() {
-    console.log('Enemy ' + this.id + ' acting');
+};
+
+Enemy.prototype.awaken = function() {
+    this.active = true;
+    Game.clearPath();
+    console.log('Enemy ' + this.id + ' awaking');
 };

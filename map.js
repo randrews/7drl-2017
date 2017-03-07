@@ -103,7 +103,7 @@ Map.prototype.updateVisibility = function(px, py){
 
     this.fov.compute(px, py, 10, function(x, y, r, visibility) {
         that.set(x, y, 1, 'visibility');
-        if(that.get(x,y,'mobs')) that.get(x,y,'mobs').active = true;
+        if(that.get(x,y,'mobs') && that.get(x,y,'mobs').active == false) that.get(x,y,'mobs').awaken();
     });
 
     this.lighting.clearLights();

@@ -8,7 +8,7 @@ Game.init = function(){
     Game.display = new Display(Game.map);
     Game.scheduler = new ROT.Scheduler.Simple();
     Game.engine = new ROT.Engine(Game.scheduler);
-
+    
     /*
       This engine stuff deserves a little explanation:
       The engine will run through all the actors (which is anything
@@ -22,12 +22,43 @@ Game.init = function(){
       and then Game, which locks it again waiting for input...
      */
     Game.scheduler.add(Game);
-    window.addEventListener('keydown', Game);
+
+    window.addEventListener('keydown', Game.keyPress);
 };
 
-Game.act = function() { Game.engine.lock(); }
+Game.act = function() {
+    if(Game.path && Game.path.length > 0) {
+        var next = Game.path.shift();
+        setTimeout(function(){ Game.doMove(next[0], next[1]); }, 100);
+    } else {
+        Game.engine.lock();
+    }
+}
 
-Game.handleEvent = function(event) {
+Game.clickMap = function(event) {
+    if(Game.path && Game.path.length > 0) return;
+    var click = Game.display.display.eventToPosition(event);
+    click[0] += Game.display.origin[0];
+    click[1] += Game.display.origin[1];
+
+    if(Game.map.empty(click[0], click[1]) && Game.map.get(click[0], click[1], 'visibility')) {
+        var pathfinder = new ROT.Path.Dijkstra(click[0], click[1], function(x,y) {
+            return Game.map.empty(x, y) && Game.map.get(x, y, 'visibility');
+        });
+        Game.path = [];
+        pathfinder.compute(Game.player[0], Game.player[1], function(x, y){
+            Game.path.push([x,y]);
+        });
+        Game.path.shift(); // The first element is where the player is
+        if(Game.path.length > 0) Game.act();
+    }
+};
+
+Game.clearPath = function(){
+    Game.path = [];
+};
+
+Game.keyPress = function(event) {
     var keys = {}
     keys[ROT.VK_UP] = 0;
     keys[ROT.VK_RIGHT] = 1;
@@ -39,21 +70,7 @@ Game.handleEvent = function(event) {
         var delta = ROT.DIRS[4][dir];
         var new_x = Game.player[0] + delta[0];
         var new_y = Game.player[1] + delta[1];
-        switch(dir) {
-        case 0: Game.lastPlayerDirection = 'N'; break;
-        case 1: Game.lastPlayerDirection = 'E'; break;
-        case 2: Game.lastPlayerDirection = 'S'; break;
-        case 3: Game.lastPlayerDirection = 'W'; break;
-        }
-        if(Game.tryMove(new_x, new_y)) {
-            Game.player[0] = new_x;
-            Game.player[1] = new_y;
-            Game.map.updateVisibility(Game.player[0], Game.player[1]);
-            Game.prepareNextTurn();
-            Game.engine.unlock();
-        }
-        Game.display.scroll(Game.lastPlayerDirection);
-        Game.display.draw();
+        if(Game.tryMove(new_x, new_y)) Game.doMove(new_x, new_y);
         return event.preventDefault();
     }
 };
@@ -61,6 +78,21 @@ Game.handleEvent = function(event) {
 Game.prepareNextTurn = function() {
     Game.map.eachMob(function(mob){ if(mob.active) Game.scheduler.add(mob); });
     Game.scheduler.add(Game);
+};
+
+Game.doMove = function(new_x, new_y) {
+    if(new_y < Game.player[1]) Game.lastPlayerDirection = 'N';
+    else if(new_y > Game.player[1]) Game.lastPlayerDirection = 'S';
+    else if(new_x < Game.player[0]) Game.lastPlayerDirection = 'W';
+    else if(new_x > Game.player[0]) Game.lastPlayerDirection = 'E';
+
+    Game.player[0] = new_x;
+    Game.player[1] = new_y;
+    Game.map.updateVisibility(Game.player[0], Game.player[1]);
+    Game.prepareNextTurn();
+    Game.engine.unlock();
+    Game.display.scroll(Game.lastPlayerDirection);
+    Game.display.draw();
 };
 
 Game.tryMove = function(x,y) {

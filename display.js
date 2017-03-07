@@ -79,6 +79,7 @@ Display.prototype.makeDisplay = function() {
 
     this.display = new ROT.Display(Display.opts);
     $('.main-map').append(this.display.getContainer());
+    this.display.getContainer().addEventListener('click', Game.clickMap);
 };
 
 Display.prototype.draw = function(){
