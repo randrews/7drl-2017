@@ -29,7 +29,13 @@ Game.init = function(){
 Game.act = function() {
     if(Game.path && Game.path.length > 0) {
         var next = Game.path.shift();
-        setTimeout(function(){ Game.doMove(next[0], next[1]); }, 100);
+        setTimeout(function(){
+            if(Game.tryMove(next[0], next[1])){
+                Game.doMove(next[0], next[1]);
+            } else {
+                Game.clearPath();
+            }
+        }, 100);
     } else {
         Game.engine.lock();
     }
@@ -41,7 +47,7 @@ Game.clickMap = function(event) {
     click[0] += Game.display.origin[0];
     click[1] += Game.display.origin[1];
 
-    if(Game.map.empty(click[0], click[1]) && Game.map.get(click[0], click[1], 'visibility')) {
+    if(Game.map.navigable(click[0], click[1]) && Game.map.get(click[0], click[1], 'visibility')) {
         var pathfinder = new ROT.Path.Dijkstra(click[0], click[1], function(x,y) {
             return Game.map.empty(x, y) && Game.map.get(x, y, 'visibility');
         });
@@ -70,7 +76,9 @@ Game.keyPress = function(event) {
         var delta = ROT.DIRS[4][dir];
         var new_x = Game.player[0] + delta[0];
         var new_y = Game.player[1] + delta[1];
-        if(Game.tryMove(new_x, new_y)) Game.doMove(new_x, new_y);
+        if(Game.tryMove(new_x, new_y)) {
+            Game.doMove(new_x, new_y);
+        }
         return event.preventDefault();
     }
 };
@@ -80,24 +88,81 @@ Game.prepareNextTurn = function() {
     Game.scheduler.add(Game);
 };
 
-Game.doMove = function(new_x, new_y) {
-    if(new_y < Game.player[1]) Game.lastPlayerDirection = 'N';
-    else if(new_y > Game.player[1]) Game.lastPlayerDirection = 'S';
-    else if(new_x < Game.player[0]) Game.lastPlayerDirection = 'W';
-    else if(new_x > Game.player[0]) Game.lastPlayerDirection = 'E';
+Game.doAttack = function(new_x, new_y) {
+    var tgtx = new_x*2 - Game.player[0];
+    var tgty = new_y*2 - Game.player[1];
+    var mob = Game.map.get(tgtx, tgty, 'mobs');
+    if(Game.map.empty(new_x, new_y) && mob){
+        Game.map.set(tgtx, tgty, null, 'mobs');
+        var idx = Game.map.mobs.findIndex(function(e){ return e === mob; });
+        Game.map.mobs.splice(idx, 1);
+    }
+};
 
+Game.canShove = function(new_x, new_y) {
+    var tgtx = new_x*2 - Game.player[0];
+    var tgty = new_y*2 - Game.player[1];
+    var mob = Game.map.get(new_x, new_y, 'mobs');
+
+    return mob && Game.map.empty(tgtx, tgty);
+};
+
+Game.doShove = function(new_x, new_y) {
+    var tgtx = new_x*2 - Game.player[0];
+    var tgty = new_y*2 - Game.player[1];
+    var mob = Game.map.get(new_x, new_y, 'mobs');
+
+    Game.map.set(new_x, new_y, null, 'mobs');
+    Game.map.set(tgtx, tgty, mob, 'mobs');
+    mob.shove(tgtx, tgty);
+};
+
+Game.doMove = function(new_x, new_y) {
+    Game.doAttack(new_x, new_y);
+
+    var moved_dirs = [];
+    if(new_y < Game.player[1]) moved_dirs.push('N');
+    if(new_y > Game.player[1]) moved_dirs.push('S');
+    if(new_x > Game.player[0]) moved_dirs.push('E');
+    if(new_x < Game.player[0]) moved_dirs.push('W');
+
+    Game.lastPlayerDirection = moved_dirs[0];
+
+    if(Game.isBump(new_x, new_y)){
+        if(Game.canShove(new_x, new_y))
+            Game.doShove(new_x, new_y);
+        Game.display.draw();
+        return;
+    }
+    
     Game.player[0] = new_x;
     Game.player[1] = new_y;
     Game.map.updateVisibility(Game.player[0], Game.player[1]);
     Game.prepareNextTurn();
     Game.engine.unlock();
-    Game.display.scroll(Game.lastPlayerDirection);
+    Game.display.scroll(moved_dirs[0]);
+    if(moved_dirs[1]) Game.display.scroll(moved_dirs[1]);
     Game.display.draw();
 };
 
+Game.attack = function(enemy) {
+    console.log("Enemy " + enemy.id + " attacking");
+};
+
 Game.tryMove = function(x,y) {
-    if(Game.map.get(x,y).match('^floor')) return true;
-    else return false;
+    return Game.map.navigable(x,y);
+};
+
+Game.isBump = function(x,y) {
+    return Game.map.get(x,y, 'mobs');
+};
+
+Game.tryEnemyMove = function(enemy, x, y) {
+    if(Game.map.empty(x,y) && (x != Game.player[0] || y != Game.player[1])) {
+        Game.map.set(enemy.x, enemy.y, null, 'mobs');
+        enemy.x = x; enemy.y = y;
+        Game.map.set(enemy.x, enemy.y, enemy, 'mobs');
+    }
 };
 
 $('document').ready(Game.init);

@@ -37,7 +37,7 @@ Map = function(w, h){
 
     for(var n=0; n<64; n++){
         var point = this.random(function(x, y){ return that.empty(x, y); });
-        var mob = new Enemy('skeleton');
+        var mob = new Enemy('skeleton', point[0], point[1]);
         this.set(point[0], point[1], mob, 'mobs');
         this.mobs.push(mob);
     }
@@ -72,6 +72,16 @@ Map.prototype.set = function(x, y, v, layer){
 
 Map.prototype.empty = function(x, y){
     return this.get(x, y).match('^floor') && !this.get(x, y, 'mobs');
+};
+
+Map.prototype.navigable = function(x, y){
+    return this.get(x, y).match('^floor');
+};
+
+Map.prototype.adjacent = function(a, b){
+    var dx = Math.abs(a[0] - b[0]);
+    var dy = Math.abs(a[1] - b[1]);
+    return dx <= 1 && dy <= 1;
 };
 
 Map.prototype.random = function(fn){
