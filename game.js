@@ -129,19 +129,19 @@ Game.doMove = function(new_x, new_y) {
     Game.lastPlayerDirection = moved_dirs[0];
 
     if(Game.isBump(new_x, new_y)){
-        if(Game.canShove(new_x, new_y))
+        if(Game.canShove(new_x, new_y)) {
             Game.doShove(new_x, new_y);
-        Game.display.draw();
-        return;
+        }
+    } else {
+        Game.player[0] = new_x;
+        Game.player[1] = new_y;
+        Game.map.updateVisibility(Game.player[0], Game.player[1]);
+        Game.display.scroll(moved_dirs[0]);
+        if(moved_dirs[1]) Game.display.scroll(moved_dirs[1]);
     }
-    
-    Game.player[0] = new_x;
-    Game.player[1] = new_y;
-    Game.map.updateVisibility(Game.player[0], Game.player[1]);
+
     Game.prepareNextTurn();
     Game.engine.unlock();
-    Game.display.scroll(moved_dirs[0]);
-    if(moved_dirs[1]) Game.display.scroll(moved_dirs[1]);
     Game.display.draw();
 };
 
