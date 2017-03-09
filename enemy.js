@@ -28,15 +28,18 @@ Enemy.prototype.act = function() {
         return;
     }
 
-    if(Game.map.adjacent([this.x, this.y], Game.player)) Game.attack(this);
-    else if(this.x > Game.player[0] && this.y > Game.player[1]) { Game.tryEnemyMove(this, this.x-1, this.y-1); }
-    else if(this.x < Game.player[0] && this.y > Game.player[1]) { Game.tryEnemyMove(this, this.x+1, this.y-1); }
-    else if(this.x < Game.player[0] && this.y < Game.player[1]) { Game.tryEnemyMove(this, this.x+1, this.y+1); }
-    else if(this.x > Game.player[0] && this.y < Game.player[1]) { Game.tryEnemyMove(this, this.x-1, this.y+1); }
-    else if(this.x == Game.player[0] && this.y < Game.player[1]) { Game.tryEnemyMove(this, this.x, this.y+1); }
-    else if(this.x == Game.player[0] && this.y > Game.player[1]) { Game.tryEnemyMove(this, this.x, this.y-1); }
-    else if(this.x < Game.player[0] && this.y == Game.player[1]) { Game.tryEnemyMove(this, this.x+1, this.y); }
-    else if(this.x > Game.player[0] && this.y == Game.player[1]) { Game.tryEnemyMove(this, this.x-1, this.y); }
+    if(Game.map.adjacent([this.x, this.y], Game.player)){
+        Game.attack(this);
+    } else {
+        if(this.x > Game.player[0] && this.y > Game.player[1] && Game.tryEnemyMove(this, this.x-1, this.y-1)) return;
+        if(this.x < Game.player[0] && this.y > Game.player[1] && Game.tryEnemyMove(this, this.x+1, this.y-1)) return;
+        if(this.x < Game.player[0] && this.y < Game.player[1] && Game.tryEnemyMove(this, this.x+1, this.y+1)) return;
+        if(this.x > Game.player[0] && this.y < Game.player[1] && Game.tryEnemyMove(this, this.x-1, this.y+1)) return;
+        if(this.y < Game.player[1] && Game.tryEnemyMove(this, this.x, this.y+1)) return;
+        if(this.y > Game.player[1] && Game.tryEnemyMove(this, this.x, this.y-1)) return;
+        if(this.x < Game.player[0] && Game.tryEnemyMove(this, this.x+1, this.y)) return;
+        if(this.x > Game.player[0] && Game.tryEnemyMove(this, this.x-1, this.y)) return;
+    }
 };
 
 Enemy.prototype.awaken = function() {

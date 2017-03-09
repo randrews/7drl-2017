@@ -162,7 +162,9 @@ Game.tryEnemyMove = function(enemy, x, y) {
         Game.map.set(enemy.x, enemy.y, null, 'mobs');
         enemy.x = x; enemy.y = y;
         Game.map.set(enemy.x, enemy.y, enemy, 'mobs');
+        return true;
     }
+    return false;
 };
 
 $('document').ready(Game.init);
