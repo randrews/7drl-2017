@@ -2,6 +2,8 @@ Display = function(map) {
     Display.opts.tileSet = document.createElement('img');
     Display.opts.tileSet.src = 'tiny_dungeon.png';
 
+    this.status = new Status();
+
     this.effects = {};
     this.map = map;
     this.makeDisplay();
@@ -11,7 +13,10 @@ Display = function(map) {
         that.scroll();
         that.draw();
     });
-    Display.opts.tileSet.onload = function(){ that.draw(); Game.engine.start(); };
+    Display.opts.tileSet.onload = function(){
+        that.draw();
+        Game.engine.start();
+    };
 
     this.playerFrame = 1;
     this.tick = 0;
@@ -95,8 +100,8 @@ Display.prototype.playerSprite = function() {
 
 Display.prototype.makeDisplay = function() {
     $('.main-map *').remove();
-    Display.opts.width = Math.floor($(window).width() / 32);
-    Display.opts.height =  Math.floor($(window).height() / 32);
+    Display.opts.width = Math.floor($('#container').width() / 32);
+    Display.opts.height =  Math.floor($('#container').height() / 32);
 
     this.display = new ROT.Display(Display.opts);
     $('.main-map').append(this.display.getContainer());
@@ -115,6 +120,7 @@ Display.prototype.draw = function(){
                 this.display.draw(x - this.origin[0], y - this.origin[1], this.map.get(x, y), 'rgba(0,0,0,1)');
             }
         }
+    this.status.draw();
 };
 
 Display.prototype.drawVisibleCell = function(x, y) {

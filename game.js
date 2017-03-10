@@ -8,7 +8,11 @@ Game.init = function(){
     Game.display = new Display(Game.map);
     Game.scheduler = new ROT.Scheduler.Simple();
     Game.engine = new ROT.Engine(Game.scheduler);
-    
+
+    Game.maxHealth = 10;
+    Game.health = 10;
+    Game.maxMana = 5;
+    Game.mana = 5;
     /*
       This engine stuff deserves a little explanation:
       The engine will run through all the actors (which is anything
@@ -148,7 +152,7 @@ Game.doMove = function(new_x, new_y) {
 };
 
 Game.attack = function(enemy) {
-    console.log("Enemy " + enemy.id + " attacking");
+    Game.health--;
     Game.display.addEffect(Game.player[0], Game.player[1], ['slashL', 'slashR'].random());
 };
 
