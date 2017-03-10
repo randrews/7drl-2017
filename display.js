@@ -2,6 +2,7 @@ Display = function(map) {
     Display.opts.tileSet = document.createElement('img');
     Display.opts.tileSet.src = 'tiny_dungeon.png';
 
+    this.effects = {};
     this.map = map;
     this.makeDisplay();
     var that = this;
@@ -20,7 +21,14 @@ Display = function(map) {
             that.playerFrame = (that.playerFrame + 1) % 2;
 
         that.map.eachMob(function(mob){mob.animate(that.tick);});
+
         that.draw();
+
+        for(var i in that.effects){
+            that.effects[i].act();
+            if(!that.effects[i].active) delete that.effects[i];
+        }
+
     }, 100);
 
     this.origin = [];
@@ -65,6 +73,19 @@ Display.opts = { width: 0,
                      'skeletonN1': [256, 224],
                      'skeletonW0': [288, 192],
                      'skeletonW1': [288, 224],
+
+                     'shove0': [192, 256],
+                     'shove1': [224, 256],
+                     'shove2': [256, 256],
+                     'slashL0': [192, 288],
+                     'slashL1': [224, 288],
+                     'slashL2': [256, 288],
+                     'slashR0': [192, 320],
+                     'slashR1': [224, 320],
+                     'slashR2': [256, 320],
+                     'kill0': [0, 256],
+                     'kill1': [32, 256],
+                     'kill2': [64, 256],
                  }
                };
 
@@ -87,23 +108,39 @@ Display.prototype.draw = function(){
     for(var x=this.origin[0]; x < this.origin[0] + Display.opts.width; x++)
         for(var y=this.origin[1]; y < this.origin[1] + Display.opts.height; y++) {
             if(this.map.get(x, y, 'visibility') == 1) {
-                var color = 'rgba(' + this.map.get(x, y, 'color').join(',') + ',0.1)';
-                var mob = this.map.get(x, y, 'mobs');
-
-                if(mob)
-                    this.display.draw(x - this.origin[0], y - this.origin[1], [this.map.get(x, y), mob.mobSprite()], 'transparent', color);
-                else
-                    this.display.draw(x - this.origin[0], y - this.origin[1], [this.map.get(x, y)], color);
+                this.drawVisibleCell(x, y);
             } else if(this.map.get(x, y, 'visibility') == 2) {
-                this.display.draw(x - this.origin[0], y - this.origin[1], this.map.get(x, y), 'rgba(0,0,0,0.65)');
+                this.drawRememberedCell(x, y);
             } else {
                 this.display.draw(x - this.origin[0], y - this.origin[1], this.map.get(x, y), 'rgba(0,0,0,1)');
             }
         }
+};
 
-    this.display.draw(Game.player[0] - this.origin[0], Game.player[1] - this.origin[1],
-                      [this.map.get(Game.player[0], Game.player[1]),
-                       this.playerSprite()], 'transparent', 'rgba(255,255,160,0.1)');
+Display.prototype.drawVisibleCell = function(x, y) {
+    var color = 'rgba(' + this.map.get(x, y, 'color').join(',') + ',0.11)';
+    var mob = this.map.get(x, y, 'mobs');
+    var effect = this.effects[x + ',' + y];
+    var sprites = [this.map.get(x, y)];
+
+    if(mob) sprites.push(mob.mobSprite());
+    if(Game.player[0] == x && Game.player[1] == y) sprites.push(this.playerSprite());
+    if(effect) sprites.push(effect.sprite());
+
+
+    if(sprites.length == 1)
+        this.display.draw(x - this.origin[0], y - this.origin[1], sprites, color);
+    else
+        this.display.draw(x - this.origin[0], y - this.origin[1], sprites, 'transparent', color);
+};
+
+Display.prototype.drawRememberedCell = function(x, y) {
+    this.display.draw(x - this.origin[0], y - this.origin[1], this.map.get(x, y), 'rgba(0,0,0,0.65)');
+};
+
+Display.prototype.addEffect = function(x, y, name) {
+    if(this.effects[x+','+y]) this.effects[x+','+y].enqueue(name);
+    else this.effects[x+','+y] = new Effect(name);
 };
 
 Display.prototype.setBiome = function(biome, type) {

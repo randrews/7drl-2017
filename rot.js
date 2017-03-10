@@ -1321,13 +1321,13 @@ ROT.Display.Tile.prototype.draw = function(data, clearBefore) {
 				0, 0, tileWidth, tileHeight
 			);
 
-			if (fg != "transparent") {
+			if (fg != "transparent" && i == chars.length-1) {
 				context.fillStyle = fg;
 				context.globalCompositeOperation = "source-atop";
 				context.fillRect(0, 0, tileWidth, tileHeight);
 			}
 
-			if (bg != "transparent") {
+			if (bg != "transparent" && i == chars.length-1) {
 				context.fillStyle = bg;
 				context.globalCompositeOperation = "destination-over";
 				context.fillRect(0, 0, tileWidth, tileHeight);

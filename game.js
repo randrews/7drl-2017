@@ -96,6 +96,7 @@ Game.doAttack = function(new_x, new_y) {
         Game.map.set(tgtx, tgty, null, 'mobs');
         var idx = Game.map.mobs.findIndex(function(e){ return e === mob; });
         Game.map.mobs.splice(idx, 1);
+        Game.display.addEffect(tgtx, tgty, 'kill');
     }
 };
 
@@ -113,6 +114,7 @@ Game.doShove = function(new_x, new_y) {
     var mob = Game.map.get(new_x, new_y, 'mobs');
 
     Game.map.set(new_x, new_y, null, 'mobs');
+    Game.display.addEffect(new_x, new_y, 'shove');
     Game.map.set(tgtx, tgty, mob, 'mobs');
     mob.shove(tgtx, tgty);
 };
@@ -147,6 +149,7 @@ Game.doMove = function(new_x, new_y) {
 
 Game.attack = function(enemy) {
     console.log("Enemy " + enemy.id + " attacking");
+    Game.display.addEffect(Game.player[0], Game.player[1], ['slashL', 'slashR'].random());
 };
 
 Game.tryMove = function(x,y) {
