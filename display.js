@@ -27,7 +27,7 @@ Display = function(map) {
 
         that.map.eachMob(function(mob){mob.animate(that.tick);});
 
-        that.draw();
+        that.draw(true);
 
         for(var i in that.effects){
             that.effects[i].act();
@@ -48,6 +48,7 @@ Display.opts = { width: 0,
                  tileSet: null,
                  tileColorize: true,
                  tileMap: {
+                     '': [256, 256],
                      'floor1': [0, 128],
                      'floor2': [32, 128],
                      'floor3': [64, 128],
@@ -108,19 +109,27 @@ Display.prototype.makeDisplay = function() {
     this.display.getContainer().addEventListener('click', Game.clickMap);
 };
 
-Display.prototype.draw = function(){
+Display.prototype.draw = function(animateOnly){
     var that = this;
     for(var x=this.origin[0]; x < this.origin[0] + Display.opts.width; x++)
         for(var y=this.origin[1]; y < this.origin[1] + Display.opts.height; y++) {
             if(this.map.get(x, y, 'visibility') == 1) {
-                this.drawVisibleCell(x, y);
-            } else if(this.map.get(x, y, 'visibility') == 2) {
+                if(!animateOnly || this.containsMobs(x,y))
+                    this.drawVisibleCell(x, y);
+            } else if(this.map.get(x, y, 'visibility') == 2 && !animateOnly) {
                 this.drawRememberedCell(x, y);
-            } else {
+            } else if(!animateOnly){
                 this.display.draw(x - this.origin[0], y - this.origin[1], this.map.get(x, y), 'rgba(0,0,0,1)');
             }
         }
     this.status.draw();
+};
+
+Display.prototype.containsMobs = function(x,y) {
+    if(this.effects[x+','+y]) return true;
+    if(this.map.get(x,y,'mobs')) return true;
+    if(x == Game.player[0] && y == Game.player[1]) return true;
+    return false;
 };
 
 Display.prototype.drawVisibleCell = function(x, y) {

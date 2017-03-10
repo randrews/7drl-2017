@@ -1,5 +1,5 @@
 function Effect(name){
-    this.frames = 2;
+    this.frames = 3;
     if(typeof(name) == 'string') {
         this.name = name;
         this.frame = 0;
@@ -19,7 +19,8 @@ Effect.prototype.act = function(){
 };
 
 Effect.prototype.sprite = function(){
-    return this.name + this.frame;
+    if(this.frame >= this.frames) return '';
+    else return this.name + this.frame;
 };
 
 Effect.prototype.next = function(){
