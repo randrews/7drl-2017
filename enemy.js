@@ -5,7 +5,6 @@ Enemy = function(sprite, x, y) {
     this.frameClock = ROT.RNG.getUniformInt(0,9);
     this.direction = ['N', 'S', 'E', 'W'].random();
     this.active = false;
-    this.id = ROT.RNG.getUniformInt(0,1000);
 };
 
 Enemy.prototype.mobSprite = function() {
@@ -15,6 +14,11 @@ Enemy.prototype.mobSprite = function() {
 Enemy.prototype.animate = function(tick) {
     if(tick == this.frameClock)
         this.frame = (this.frame + 1) % 2;
+};
+
+Enemy.prototype.can = function(action){
+    // actions are 'shove', 'kill'
+    return true;
 };
 
 Enemy.prototype.shove = function(x, y){
@@ -45,4 +49,25 @@ Enemy.prototype.act = function() {
 Enemy.prototype.awaken = function() {
     this.active = true;
     Game.clearPath();
+};
+
+//////////////////////////////////////////////////
+
+Ice = function(x, y) {
+    this.x = x; this.y = y;
+    this.active = true;
+};
+
+Ice.prototype.mobSprite = function() {
+    return 'ice';
+};
+
+Ice.prototype.act = function() {};
+Ice.prototype.awaken = function() {};
+Ice.prototype.animate = function(tick) {};
+Ice.prototype.shove = function(x, y){
+    this.x = x; this.y = y;
+};
+Ice.prototype.can = function(action){
+    return false;
 };

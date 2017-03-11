@@ -111,19 +111,19 @@ Game.doAttack = function(new_x, new_y) {
     var tgtx = new_x*2 - Game.player[0];
     var tgty = new_y*2 - Game.player[1];
     var mob = Game.map.get(tgtx, tgty, 'mobs');
-    if(Game.map.empty(new_x, new_y) && mob){
+    if(Game.map.empty(new_x, new_y) && mob && mob.can('kill')){
         Game.killMob(tgtx, tgty);
         if(Game.mana < Game.maxMana) Game.mana++;
     }
 };
 
-Game.killMob = function(x, y) {
+Game.killMob = function(x, y, effect) {
     var mob = Game.map.get(x, y, 'mobs');
     if(!mob) return;
     Game.map.set(x, y, null, 'mobs');
     var idx = Game.map.mobs.findIndex(function(e){ return e === mob; });
     Game.map.mobs.splice(idx, 1);
-    Game.display.addEffect(x, y, 'kill');
+    Game.display.addEffect(x, y, effect || 'kill');
 };
 
 Game.canShove = function(new_x, new_y) {
@@ -131,7 +131,7 @@ Game.canShove = function(new_x, new_y) {
     var tgty = new_y*2 - Game.player[1];
     var mob = Game.map.get(new_x, new_y, 'mobs');
 
-    return mob && Game.map.empty(tgtx, tgty);
+    return mob && mob.can('shove') && Game.map.empty(tgtx, tgty);
 };
 
 Game.doShove = function(new_x, new_y) {
@@ -238,7 +238,18 @@ Game.cast = function(event) {
         Game.killMob(Game.player[0]-1, Game.player[1]+1);
         Game.killMob(Game.player[0], Game.player[1]+1);
         Game.killMob(Game.player[0]+1, Game.player[1]+1);
-    };
+    } else if(name == 'Freeze') {
+        Status.log('Choose an enemy');
+        Game.targeting = function(tgt) {
+            var mob = Game.map.get(tgt[0], tgt[1], 'mobs');
+            if(mob && mob.can('kill')){
+                delete Game.targeting;
+                Game.mana -= spell.cost;
+                Game.killMob(tgt[0], tgt[1], 'shove');
+                Game.map.set(tgt[0], tgt[1], new Ice(), 'mobs')
+            }
+        };        
+    }
 };
 
 $('document').ready(Game.init);

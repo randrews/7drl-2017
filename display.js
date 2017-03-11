@@ -116,6 +116,8 @@ Display.opts = { width: 0,
 
                      'lightning0': [288, 256],
                      'lightning1': [288, 288],
+
+                     'ice': [288, 320],
                  }
                };
 
