@@ -14,6 +14,7 @@ function Status(){
     Status.addSpell('Fire', 'Shoot a fireball', 5);
     Status.addSpell('Lightning', 'Kill adjacent enemies', 4);
     Status.addSpell('Freeze', 'Freeze an enemy', 4);
+    Status.addSpell('Teleport', 'Teleport yourself', 5);
 }
 
 Status.spells = {};

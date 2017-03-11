@@ -249,6 +249,20 @@ Game.cast = function(event) {
                 Game.map.set(tgt[0], tgt[1], new Ice(), 'mobs')
             }
         };        
+    } else if(name == 'Teleport') {
+        Status.log('Teleport to where?');
+        Game.targeting = function(tgt) {
+            if(Game.map.empty(tgt[0], tgt[1])) {
+                delete Game.targeting;
+                Game.mana -= spell.cost;
+                Game.player[0] = tgt[0];
+                Game.player[1] = tgt[1];
+                Game.display.addEffect(tgt[0], tgt[1], 'shove');
+                Game.map.updateVisibility(Game.player[0], Game.player[1]);
+                Game.display.scroll();
+                Game.display.draw();
+            }
+        };
     }
 };
 
