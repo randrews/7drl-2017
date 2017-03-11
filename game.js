@@ -126,6 +126,7 @@ Game.killMob = function(x, y) {
 };
 
 Game.canShove = function(new_x, new_y) {
+    //if(Game.health < Game.maxHealth) return false;
     var tgtx = new_x*2 - Game.player[0];
     var tgty = new_y*2 - Game.player[1];
     var mob = Game.map.get(new_x, new_y, 'mobs');
@@ -175,6 +176,7 @@ Game.doMove = function(new_x, new_y) {
 Game.attack = function(enemy) {
     Game.health--;
     Game.display.addEffect(Game.player[0], Game.player[1], ['slashL', 'slashR'].random());
+    if(Game.health <= 0) Game.gameover();
 };
 
 Game.tryMove = function(x,y) {
