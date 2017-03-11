@@ -119,6 +119,7 @@ Game.doAttack = function(new_x, new_y) {
 
 Game.killMob = function(x, y) {
     var mob = Game.map.get(x, y, 'mobs');
+    if(!mob) return;
     Game.map.set(x, y, null, 'mobs');
     var idx = Game.map.mobs.findIndex(function(e){ return e === mob; });
     Game.map.mobs.splice(idx, 1);
@@ -126,7 +127,6 @@ Game.killMob = function(x, y) {
 };
 
 Game.canShove = function(new_x, new_y) {
-    //if(Game.health < Game.maxHealth) return false;
     var tgtx = new_x*2 - Game.player[0];
     var tgty = new_y*2 - Game.player[1];
     var mob = Game.map.get(new_x, new_y, 'mobs');
@@ -223,10 +223,22 @@ Game.cast = function(event) {
                 delete Game.targeting;
                 Game.mana -= spell.cost;
                 var dir = [tgt[0]-Game.player[0], tgt[1]-Game.player[1]];
-                Game.display.setBullet(new Bullet(Game.player, dir, 'fireball'+Game.map.direction(Game.player, tgt)));
+                Game.display.setSpell(new Bullet(Game.player, dir, 'fireball'+Game.map.direction(Game.player, tgt)));
             }
         };
-    }
+    } else if(name == 'Lightning') {
+        Game.mana -= spell.cost;
+        Game.display.setSpell(new Lightning());
+
+        Game.killMob(Game.player[0]-1, Game.player[1]);
+        Game.killMob(Game.player[0]+1, Game.player[1]);
+        Game.killMob(Game.player[0]-1, Game.player[1]-1);
+        Game.killMob(Game.player[0], Game.player[1]-1);
+        Game.killMob(Game.player[0]+1, Game.player[1]-1);
+        Game.killMob(Game.player[0]-1, Game.player[1]+1);
+        Game.killMob(Game.player[0], Game.player[1]+1);
+        Game.killMob(Game.player[0]+1, Game.player[1]+1);
+    };
 };
 
 $('document').ready(Game.init);

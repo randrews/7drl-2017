@@ -5,7 +5,7 @@ Display = function(map) {
     this.status = new Status();
 
     this.effects = {};
-    this.bullet = null;
+    this.spell = null;
     this.dirty = {};
     this.map = map;
     this.makeDisplay();
@@ -36,12 +36,13 @@ Display = function(map) {
             if(!that.effects[i].active) delete that.effects[i];
         }
 
-        if(that.bullet){
-            that.dirty[that.bullet.position[0]+','+that.bullet.position[1]] = true;
-            that.bullet.act();
-            if(!that.bullet.active){
-                that.dirty[that.bullet.position[0]+','+that.bullet.position[1]] = true;
-                that.bullet = null;
+        if(that.spell){
+            that.spell.markDirty(that.dirty);
+
+            that.spell.act();
+            if(!that.spell.active){
+                that.spell.markDirty(that.dirty);
+                that.spell = null;
             }
         }
 
@@ -112,11 +113,14 @@ Display.opts = { width: 0,
                      'fireballSW': [96, 320],
                      'fireballN': [128, 320],
                      'fireballNW': [160, 320],
+
+                     'lightning0': [288, 256],
+                     'lightning1': [288, 288],
                  }
                };
 
 Display.prototype.busy = function() {
-    return !$.isEmptyObject(this.effects) && !$.isEmptyObject(this.bullets);
+    return this.spell;
 };
 
 Display.prototype.playerSprite = function() {
@@ -152,7 +156,7 @@ Display.prototype.draw = function(animateOnly){
 
 Display.prototype.containsAnimations = function(x,y) {
     if(this.effects[x+','+y]) return true;
-    if(this.bullet) return true;
+    if(this.spell && this.spell.affects([x,y])) return true;
     if(this.map.get(x,y,'mobs')) return true;
     if(x == Game.player[0] && y == Game.player[1]) return true;
     return false;
@@ -166,7 +170,7 @@ Display.prototype.drawVisibleCell = function(x, y) {
 
     if(mob) sprites.push(mob.mobSprite());
     if(Game.player[0] == x && Game.player[1] == y) sprites.push(this.playerSprite());
-    if(this.bullet && this.bullet.position[0] == x && this.bullet.position[1] == y) sprites.push(this.bullet.sprite());
+    if(this.spell && this.spell.affects([x,y])) sprites.push(this.spell.sprite());
     if(effect) sprites.push(effect.sprite());
 
     if(sprites.length == 1)
@@ -184,8 +188,8 @@ Display.prototype.addEffect = function(x, y, name) {
     else this.effects[x+','+y] = new Effect(name);
 };
 
-Display.prototype.setBullet = function(bullet) {
-    this.bullet = bullet;
+Display.prototype.setSpell = function(spell) {
+    this.spell = spell;
 };
 
 Display.prototype.setBiome = function(biome, type) {

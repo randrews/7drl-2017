@@ -12,6 +12,7 @@ function Status(){
 
     Status.addSpell('Heal', 'Heal 1 life', 3);
     Status.addSpell('Fire', 'Shoot a fireball', 5);
+    Status.addSpell('Lightning', 'Kill adjacent enemies', 4);
 }
 
 Status.spells = {};
