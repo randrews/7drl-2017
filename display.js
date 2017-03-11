@@ -5,6 +5,8 @@ Display = function(map) {
     this.status = new Status();
 
     this.effects = {};
+    this.bullet = null;
+    this.dirty = {};
     this.map = map;
     this.makeDisplay();
     var that = this;
@@ -32,6 +34,15 @@ Display = function(map) {
         for(var i in that.effects){
             that.effects[i].act();
             if(!that.effects[i].active) delete that.effects[i];
+        }
+
+        if(that.bullet){
+            that.dirty[that.bullet.position[0]+','+that.bullet.position[1]] = true;
+            that.bullet.act();
+            if(!that.bullet.active){
+                that.dirty[that.bullet.position[0]+','+that.bullet.position[1]] = true;
+                that.bullet = null;
+            }
         }
 
     }, 100);
@@ -92,8 +103,21 @@ Display.opts = { width: 0,
                      'kill0': [0, 256],
                      'kill1': [32, 256],
                      'kill2': [64, 256],
+
+                     'fireballW': [32, 288],
+                     'fireballNE': [64, 288],
+                     'fireballE': [0, 320],
+                     'fireballSE': [32, 320],
+                     'fireballS': [64, 320],
+                     'fireballSW': [96, 320],
+                     'fireballN': [128, 320],
+                     'fireballNW': [160, 320],
                  }
                };
+
+Display.prototype.busy = function() {
+    return !$.isEmptyObject(this.effects) && !$.isEmptyObject(this.bullets);
+};
 
 Display.prototype.playerSprite = function() {
     return 'player' + Game.lastPlayerDirection + this.playerFrame;
@@ -114,8 +138,9 @@ Display.prototype.draw = function(animateOnly){
     for(var x=this.origin[0]; x < this.origin[0] + Display.opts.width; x++)
         for(var y=this.origin[1]; y < this.origin[1] + Display.opts.height; y++) {
             if(this.map.get(x, y, 'visibility') == 1) {
-                if(!animateOnly || this.containsMobs(x,y))
+                if(!animateOnly || this.containsAnimations(x, y) || this.dirty[x+','+y])
                     this.drawVisibleCell(x, y);
+                delete this.dirty[x+','+y];
             } else if(this.map.get(x, y, 'visibility') == 2 && !animateOnly) {
                 this.drawRememberedCell(x, y);
             } else if(!animateOnly){
@@ -125,8 +150,9 @@ Display.prototype.draw = function(animateOnly){
     this.status.draw();
 };
 
-Display.prototype.containsMobs = function(x,y) {
+Display.prototype.containsAnimations = function(x,y) {
     if(this.effects[x+','+y]) return true;
+    if(this.bullet) return true;
     if(this.map.get(x,y,'mobs')) return true;
     if(x == Game.player[0] && y == Game.player[1]) return true;
     return false;
@@ -140,8 +166,8 @@ Display.prototype.drawVisibleCell = function(x, y) {
 
     if(mob) sprites.push(mob.mobSprite());
     if(Game.player[0] == x && Game.player[1] == y) sprites.push(this.playerSprite());
+    if(this.bullet && this.bullet.position[0] == x && this.bullet.position[1] == y) sprites.push(this.bullet.sprite());
     if(effect) sprites.push(effect.sprite());
-
 
     if(sprites.length == 1)
         this.display.draw(x - this.origin[0], y - this.origin[1], sprites, color);
@@ -156,6 +182,10 @@ Display.prototype.drawRememberedCell = function(x, y) {
 Display.prototype.addEffect = function(x, y, name) {
     if(this.effects[x+','+y]) this.effects[x+','+y].enqueue(name);
     else this.effects[x+','+y] = new Effect(name);
+};
+
+Display.prototype.setBullet = function(bullet) {
+    this.bullet = bullet;
 };
 
 Display.prototype.setBiome = function(biome, type) {

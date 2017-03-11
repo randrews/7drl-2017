@@ -16,19 +16,37 @@
     <link href="https://fonts.googleapis.com/css?family=Cutive+Mono" rel="stylesheet">
 
     <style type="text/css">
+     * { font-family: 'Cutive Mono', monospace; color: white; font-weight: normal; }
      #container canvas { margin-left: auto; margin-right: auto; display: block; }
      .status canvas { margin: 0; display: block; }
      .header { font-family: 'Cutive Mono', monospace; color: white; font-weight: normal; font-size: 24px; }
-     h1 { font-size: 16px;  margin: 0 10px; display: inline; font-weight: normal; }
+     .log { font-family: 'Cutive Mono', monospace; color: white; font-weight: normal; font-size: 16; padding-left: 10px; }
+     .header h1 { font-size: 16px;  margin: 0 10px; display: inline; font-weight: normal; position: absolute; }
+     .spells { position: fixed; top: 16px; left: 276px; right: 0px; height: 32px; }
+     button { background-image: url('tiny_dungeon.png'); background-position: -96px -256px; height: 32px; width: 96px; border: 0;
+         color: white; font-size: 16px; }
+     button:active { background-position: -96px -288px; }
+     button:disabled { color: gray; }
+     .gameover { position: fixed; top: 0; left: 0; bottom: 0; right: 0; }
+     .gameover .cover { position: fixed; top: 0; left: 0; bottom: 0; right: 0; z-index: 100; background: #333; opacity: 0.5; }
+     .gameover .restart { position: relative; top: 50%; margin: -50px auto 0 auto; height: 100px; width: 200px; padding: 25px 0; text-align: center; background: black; z-index: 200; }
     </style>
   </head>
   <body style="margin: 0; background: black;">
-      <div class="header" style="position: fixed; top: 0; left: 0; right: 0; height: 32px;">
+      <div class="header" style="position: fixed; top: 0; left: 0; right: 0; height: 16px;">
           <h1>Caverns of Sevendral - Ross Andrews</h1>
       </div>
-      <div class="status" style="position: fixed; top: 32px; left: 0; right: 0; height: 32px;"></div>
+      <div class="status" style="position: fixed; top: 16px; left: 10px; right: 0; height: 32px;">
+      </div>
+      <div class="spells">
+      </div>
+      <div class="log" style="position: fixed; top: 48px; left: 0; right: 0; height: 16px;"></div>
       <div id="container" style="position: fixed; top: 64px; left: 0; bottom:0; right: 0;">
           <div class="main-map" style="position: relative;"></div>
+      </div>
+      <div class="gameover" style="display: none">
+          <div class="cover"></div>
+          <div class="restart">You have died!<br/><br/><br/><button onclick="Game.init()">Restart</button></div>
       </div>
   </body>
 </html>

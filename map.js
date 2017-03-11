@@ -75,13 +75,28 @@ Map.prototype.empty = function(x, y){
 };
 
 Map.prototype.navigable = function(x, y){
-    return this.get(x, y).match('^floor');
+    var tile = this.get(x, y);
+    return tile && tile.match('^floor');
 };
 
 Map.prototype.adjacent = function(a, b){
     var dx = Math.abs(a[0] - b[0]);
     var dy = Math.abs(a[1] - b[1]);
     return dx <= 1 && dy <= 1;
+};
+
+Map.prototype.direction = function(a,b){
+    var dx = b[0] - a[0];
+    var dy = b[1] - a[1];
+
+    if(dx==0 && dy<0) return 'N';
+    if(dx>0 && dy<0) return 'NE';
+    if(dx>0 && dy==0) return 'E';
+    if(dx>0 && dy>0) return 'SE';
+    if(dx==0 && dy>0) return 'S';
+    if(dx<0 && dy>0) return 'SW';
+    if(dx<0 && dy==0) return 'W';
+    if(dx<0 && dy<0) return 'NW';
 };
 
 Map.prototype.random = function(fn){

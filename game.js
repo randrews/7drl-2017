@@ -1,6 +1,7 @@
 Game = {};
 
 Game.init = function(){
+    $('.gameover').hide();
     Game.map = new Map(64, 64);
     Game.player = Game.map.random(function(x,y){ return Game.map.empty(x,y); });
     Game.lastPlayerDirection = 'S';
@@ -13,6 +14,8 @@ Game.init = function(){
     Game.health = 10;
     Game.maxMana = 5;
     Game.mana = 5;
+    Game.dead = false;
+
     /*
       This engine stuff deserves a little explanation:
       The engine will run through all the actors (which is anything
@@ -46,12 +49,14 @@ Game.act = function() {
 }
 
 Game.clickMap = function(event) {
+    if(Game.display.busy()) return;
     if(Game.path && Game.path.length > 0) return;
     var click = Game.display.display.eventToPosition(event);
     click[0] += Game.display.origin[0];
     click[1] += Game.display.origin[1];
 
-    if(Game.map.navigable(click[0], click[1]) && Game.map.get(click[0], click[1], 'visibility')) {
+    if(Game.targeting) { Game.targeting(click); }
+    else if(Game.map.navigable(click[0], click[1]) && Game.map.get(click[0], click[1], 'visibility')) {
         var pathfinder = new ROT.Path.Dijkstra(click[0], click[1], function(x,y) {
             return Game.map.empty(x, y) && Game.map.get(x, y, 'visibility');
         });
@@ -69,20 +74,30 @@ Game.clearPath = function(){
 };
 
 Game.keyPress = function(event) {
+    if(Game.display.busy()) return;
     var keys = {}
     keys[ROT.VK_UP] = 0;
-    keys[ROT.VK_RIGHT] = 1;
-    keys[ROT.VK_DOWN] = 2;
-    keys[ROT.VK_LEFT] = 3;
+    keys[ROT.VK_RIGHT] = 2;
+    keys[ROT.VK_DOWN] = 4;
+    keys[ROT.VK_LEFT] = 6;
+
+    keys[ROT.VK_NUMPAD1] = 5;
+    keys[ROT.VK_NUMPAD2] = 4;
+    keys[ROT.VK_NUMPAD3] = 3;
+    keys[ROT.VK_NUMPAD4] = 6;
+    keys[ROT.VK_NUMPAD6] = 2;
+    keys[ROT.VK_NUMPAD7] = 7;
+    keys[ROT.VK_NUMPAD8] = 0;
+    keys[ROT.VK_NUMPAD9] = 1;
+
     var dir = keys[event.keyCode];
 
     if(dir != null){
-        var delta = ROT.DIRS[4][dir];
+        var delta = ROT.DIRS[8][dir];
         var new_x = Game.player[0] + delta[0];
         var new_y = Game.player[1] + delta[1];
-        if(Game.tryMove(new_x, new_y)) {
-            Game.doMove(new_x, new_y);
-        }
+        if(Game.targeting) { Game.targeting([new_x, new_y]); }
+        else if(Game.tryMove(new_x, new_y)) { Game.doMove(new_x, new_y); }
         return event.preventDefault();
     }
 };
@@ -97,11 +112,17 @@ Game.doAttack = function(new_x, new_y) {
     var tgty = new_y*2 - Game.player[1];
     var mob = Game.map.get(tgtx, tgty, 'mobs');
     if(Game.map.empty(new_x, new_y) && mob){
-        Game.map.set(tgtx, tgty, null, 'mobs');
-        var idx = Game.map.mobs.findIndex(function(e){ return e === mob; });
-        Game.map.mobs.splice(idx, 1);
-        Game.display.addEffect(tgtx, tgty, 'kill');
+        Game.killMob(tgtx, tgty);
+        if(Game.mana < Game.maxMana) Game.mana++;
     }
+};
+
+Game.killMob = function(x, y) {
+    var mob = Game.map.get(x, y, 'mobs');
+    Game.map.set(x, y, null, 'mobs');
+    var idx = Game.map.mobs.findIndex(function(e){ return e === mob; });
+    Game.map.mobs.splice(idx, 1);
+    Game.display.addEffect(x, y, 'kill');
 };
 
 Game.canShove = function(new_x, new_y) {
@@ -172,6 +193,38 @@ Game.tryEnemyMove = function(enemy, x, y) {
         return true;
     }
     return false;
+};
+
+Game.gameover = function() {
+    Game.dead = true;
+    clearInterval(Game.display.animation);
+    window.removeEventListener('keydown', Game.keyPress);
+    $('.gameover').show();
+};
+
+Game.cast = function(event) {
+    var name = $(this).attr('name');
+    var spell = Status.spells[name];
+
+    if(name == 'Heal') {
+        if(Game.health < Game.maxHealth) {
+            Game.health++;
+            Game.mana -= spell.cost;
+            Status.log('You heal one life');
+        } else {
+            Status.log("You're already at full health");
+        }
+    } else if(name == 'Fire') {
+        Status.log('Choose a direction');
+        Game.targeting = function(tgt) {
+            if(Game.map.adjacent(tgt, Game.player)){
+                delete Game.targeting;
+                Game.mana -= spell.cost;
+                var dir = [tgt[0]-Game.player[0], tgt[1]-Game.player[1]];
+                Game.display.setBullet(new Bullet(Game.player, dir, 'fireball'+Game.map.direction(Game.player, tgt)));
+            }
+        };
+    }
 };
 
 $('document').ready(Game.init);

@@ -9,7 +9,38 @@ function Status(){
         that.display = new ROT.Display(Status.opts);
         $('.status').append(that.display.getContainer());
     };
+
+    Status.addSpell('Heal', 'Heal 1 life', 3);
+    Status.addSpell('Fire', 'Shoot a fireball', 5);
 }
+
+Status.spells = {};
+
+Status.log = function(str){
+    $('.log').text(str);
+};
+
+Status.showSpellDescription = function(event) {
+    spell = Status.spells[$(this).attr('name')];
+    Status.log(spell.cost+': '+spell.description);
+};
+
+Status.hideSpellDescription = function(event) {
+    Status.log('');
+};
+
+Status.addSpell = function(name, description, cost) {
+    if(Status.spells[name]) return;
+    Status.spells[name] = { name: name, description: description, cost: cost };
+    var button = document.createElement('button');
+    Status.spells[name].button = button;
+    $(button).text(name);
+    $(button).attr('name', name);
+    $('.spells').append(button);
+    $(button).on('mouseenter', Status.showSpellDescription);
+    $(button).on('mouseleave', Status.hideSpellDescription);
+    $(button).on('click', Game.cast);
+};
 
 Status.opts = { width: 16,
                 height: 2,
@@ -35,5 +66,10 @@ Status.prototype.draw = function(){
     for(var n=0; n<Game.maxMana; n++){
         if(n < Game.mana) this.display.draw(n, 1, 'mana1');
         else this.display.draw(n, 1, 'mana0')
+    }
+
+    for(var name in Status.spells) {
+        var afford = Status.spells[name].cost <= Game.mana;
+        $(Status.spells[name].button).attr('disabled', !afford);
     }
 };
