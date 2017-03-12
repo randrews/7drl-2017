@@ -126,6 +126,7 @@ Display.opts = { width: 0,
                      'shield2': [0, 352],
 
                      'scroll': [96, 352],
+                     'crown': [128, 352],
                  }
                };
 

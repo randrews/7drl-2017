@@ -126,8 +126,8 @@ Scroll.prototype.enter = function(){
     var spells = [
         ['Heal', 'Heal 1 life', 2],
         ['Fire', 'Shoot a fireball', 5],
-        ['Lightning', 'Kill adjacent enemies', 5],
-        ['Freeze', 'Freeze an enemy', 5],
+        ['Lightning', 'Kill adjacent enemies', 4],
+        ['Freeze', 'Freeze an enemy', 3],
         ['Teleport', 'Teleport yourself', 5],
         ['Shield', 'Protect yourself from attacks for 5 turns', 3]
     ];
@@ -164,4 +164,26 @@ Scroll.prototype.enter = function(){
         $('.scroll').hide();
         Game.map.removeMob(that);
     });
-}
+};
+
+//////////////////////////////////////////////////
+
+Crown = function(x, y) {
+    this.x = x; this.y = y;
+    this.active = true;
+};
+
+Crown.prototype.mobSprite = function() {
+    return 'crown';
+};
+
+Crown.prototype.act = function() {};
+Crown.prototype.awaken = function() {};
+Crown.prototype.animate = function(tick) {};
+Crown.prototype.can = function(action){
+    return action == 'enter';
+};
+Crown.prototype.enter = function(){
+    $('.message').html('You have found the crown! You win!');
+    $('.scroll').show();
+};

@@ -9,9 +9,7 @@ function Status(){
         that.display = new ROT.Display(Status.opts);
         $('.status').append(that.display.getContainer());
     };
-    Status.spellCount = 0;
-
-    Status.addSpell('Heal', 'Heal 1 life', 2);
+    Status.resetSpells();
 
     Status.log('Welcome to Sevendral! Enjoy your quest');
 }
@@ -55,6 +53,13 @@ Status.removeSpell = function(name) {
     Status.spellCount--;
     $(Status.spells[name].button).remove();
     delete Status.spells[name];
+};
+
+Status.resetSpells = function() {
+    Status.spells = {};
+    Status.spellCount = 0;
+    $('.spells button').remove();
+    Status.addSpell('Heal', 'Heal 1 life', 2);
 };
 
 Status.opts = { width: 16,

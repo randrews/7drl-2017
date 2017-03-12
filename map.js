@@ -45,6 +45,9 @@ Map = function(w, h){
         var stairsDown = this.random(function(x,y){ return that.empty(x,y); });
         var stairs = new StairsDown(stairsDown[0], stairsDown[1]);
         this.addMob(stairsDown, stairs);
+    } else if(Game.display && Game.display.currentBiome == 3){
+        var point = this.random(function(x, y){ return that.empty(x, y); });
+        this.addMob(point, new Crown(point[0], point[1]));
     }
 
     for(var n=0; n<3; n++){
