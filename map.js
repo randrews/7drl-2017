@@ -38,9 +38,20 @@ Map = function(w, h){
     for(var n=0; n<64; n++){
         var point = this.random(function(x, y){ return that.empty(x, y); });
         var mob = new Enemy('skeleton', point[0], point[1]);
-        this.set(point[0], point[1], mob, 'mobs');
-        this.mobs.push(mob);
+        this.addMob(point, mob);
     }
+
+    if(!Game.display || Game.display.currentBiome < 3){
+        var stairsDown = this.random(function(x,y){ return that.empty(x,y); });
+        var stairs = new StairsDown(stairsDown[0], stairsDown[1]);
+        this.addMob(stairsDown, stairs);
+    }
+};
+
+Map.prototype.addMob = function(pt, mob){
+    this.set(pt[0], pt[1], mob, 'mobs');
+    this.mobs.push(mob);
+
 };
 
 Map.prototype.clear = function(layer){
@@ -76,7 +87,8 @@ Map.prototype.empty = function(x, y){
 
 Map.prototype.navigable = function(x, y){
     var tile = this.get(x, y);
-    return tile && tile.match('^floor');
+    var mob = this.get(x, y, 'mobs');
+    return tile && tile.match('^floor') || (!mob || mob.can('enter'));
 };
 
 Map.prototype.adjacent = function(a, b){

@@ -3,7 +3,7 @@ Display = function(map) {
     Display.opts.tileSet.src = 'tiny_dungeon.png';
 
     this.status = new Status();
-
+    this.currentBiome = 0;
     this.effects = {};
     this.spell = null;
     this.dirty = {};
@@ -73,6 +73,8 @@ Display.opts = { width: 0,
                      'front2': [32, 0],
                      'front3': [64, 0],
                      'front4': [96, 0],
+                     'stairsD': [128, 0],
+                     'stairsU': [160, 0],
 
                      'playerE0': [192, 128],
                      'playerE1': [192, 160],
@@ -209,7 +211,9 @@ Display.prototype.setBiome = function(biome, type) {
     if(type == null){
         this.setBiome(biome*32, 'front');
         this.setBiome(biome*32, 'wall');
+        this.setBiome(biome*32, 'stairs');
         this.setBiome((biome+4)*32, 'floor');
+        this.currentBiome = biome;
         return;
     }
     var tmap = Display.opts.tileMap;

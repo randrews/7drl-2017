@@ -17,8 +17,8 @@ Enemy.prototype.animate = function(tick) {
 };
 
 Enemy.prototype.can = function(action){
-    // actions are 'shove', 'kill'
-    return true;
+    // actions are 'shove', 'kill', 'enter'
+    return action != 'enter';
 };
 
 Enemy.prototype.shove = function(x, y){
@@ -65,9 +65,44 @@ Ice.prototype.mobSprite = function() {
 Ice.prototype.act = function() {};
 Ice.prototype.awaken = function() {};
 Ice.prototype.animate = function(tick) {};
-Ice.prototype.shove = function(x, y){
+Ice.prototype.can = function(action){ return false; };
+
+//////////////////////////////////////////////////
+
+StairsDown = function(x, y) {
     this.x = x; this.y = y;
+    this.active = true;
 };
-Ice.prototype.can = function(action){
-    return false;
+
+StairsDown.prototype.mobSprite = function() {
+    return 'stairsD';
 };
+
+StairsDown.prototype.act = function() {};
+StairsDown.prototype.awaken = function() {};
+StairsDown.prototype.animate = function(tick) {};
+StairsDown.prototype.can = function(action){
+    return action == 'enter';
+};
+StairsDown.prototype.enter = function(){
+    Game.nextLevel();
+};
+
+//////////////////////////////////////////////////
+
+StairsUp = function(x, y) {
+    this.x = x; this.y = y;
+    this.active = true;
+};
+
+StairsUp.prototype.mobSprite = function() {
+    return 'stairsU';
+};
+
+StairsUp.prototype.act = function() {};
+StairsUp.prototype.awaken = function() {};
+StairsUp.prototype.animate = function(tick) {};
+StairsUp.prototype.can = function(action){
+    return action == 'enter';
+};
+StairsUp.prototype.enter = function(){}

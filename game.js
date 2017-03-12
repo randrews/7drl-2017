@@ -2,10 +2,7 @@ Game = {};
 
 Game.init = function(){
     $('.gameover').hide();
-    Game.map = new Map(64, 64);
-    Game.player = Game.map.random(function(x,y){ return Game.map.empty(x,y); });
-    Game.lastPlayerDirection = 'S';
-    Game.map.updateVisibility(Game.player[0], Game.player[1]);
+    Game.initMap();
     Game.display = new Display(Game.map);
     Game.scheduler = new ROT.Scheduler.Simple();
     Game.engine = new ROT.Engine(Game.scheduler);
@@ -59,7 +56,7 @@ Game.clickMap = function(event) {
     if(Game.targeting) { Game.targeting(click); }
     else if(Game.map.navigable(click[0], click[1]) && Game.map.get(click[0], click[1], 'visibility')) {
         var pathfinder = new ROT.Path.Dijkstra(click[0], click[1], function(x,y) {
-            return Game.map.empty(x, y) && Game.map.get(x, y, 'visibility');
+            return Game.map.navigable(x, y) && Game.map.get(x, y, 'visibility');
         });
         Game.path = [];
         pathfinder.compute(Game.player[0], Game.player[1], function(x, y){
@@ -124,7 +121,7 @@ Game.doAttack = function(new_x, new_y) {
     var tgtx = new_x*2 - Game.player[0];
     var tgty = new_y*2 - Game.player[1];
     var mob = Game.map.get(tgtx, tgty, 'mobs');
-    if(Game.map.empty(new_x, new_y) && mob && mob.can('kill')){
+    if(Game.map.navigable(new_x, new_y) && mob && mob.can('kill')){
         Game.killMob(tgtx, tgty);
         if(Game.mana < Game.maxMana) Game.mana++;
     }
@@ -158,6 +155,18 @@ Game.doShove = function(new_x, new_y) {
     mob.shove(tgtx, tgty);
 };
 
+Game.canEnter = function(new_x, new_y) {
+    var mob = Game.map.get(new_x, new_y, 'mobs');
+    return mob && mob.can('enter');
+};
+
+Game.doEnter = function(new_x, new_y) {
+    var mob = Game.map.get(new_x, new_y, 'mobs');
+    Game.player[0] = new_x;
+    Game.player[1] = new_y;
+    mob.enter(new_x, new_y);
+};
+
 Game.doMove = function(new_x, new_y) {
     Game.doAttack(new_x, new_y);
 
@@ -170,7 +179,12 @@ Game.doMove = function(new_x, new_y) {
     Game.lastPlayerDirection = moved_dirs[0];
 
     if(Game.isBump(new_x, new_y)){
-        if(Game.canShove(new_x, new_y)) {
+        if(Game.canEnter(new_x, new_y)) {
+            Game.doEnter(new_x, new_y);
+            Game.map.updateVisibility(Game.player[0], Game.player[1]);
+            Game.display.scroll(moved_dirs[0]);
+            if(moved_dirs[1]) Game.display.scroll(moved_dirs[1]);
+        } else if(Game.canShove(new_x, new_y)) {
             Game.doShove(new_x, new_y);
         }
     } else {
@@ -294,6 +308,24 @@ Game.cast = function(event) {
 Game.enemyTurn = function() {
     Game.prepareNextTurn();
     Game.engine.unlock();
+    Game.display.draw();
+};
+
+Game.initMap = function() {
+    Game.map = new Map(64, 64);
+    Game.player = Game.map.random(function(x,y){ return Game.map.empty(x,y); });
+    var stairs = new StairsUp(Game.player[0], Game.player[1]);
+    Game.map.addMob(Game.player, stairs);
+    Game.lastPlayerDirection = 'S';
+    Game.map.updateVisibility(Game.player[0], Game.player[1]);
+};
+
+Game.nextLevel = function() {
+    Game.initMap();
+    Game.display.setBiome(Game.display.currentBiome + 1);
+    Status.log('Welcome to level ' + (Game.display.currentBiome+1));
+    Game.display.map = Game.map;
+    Game.display.scroll();
     Game.display.draw();
 };
 
