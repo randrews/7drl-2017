@@ -104,6 +104,14 @@ Game.keyPress = function(event) {
 };
 
 Game.prepareNextTurn = function() {
+    var dist = function(mob) {
+        var dx = (mob.x - Game.player[0]);
+        var dy = (mob.y - Game.player[1]);
+        return dx*dx + dy*dy;
+    };
+
+    this.map.mobs.sort(function(a,b) { return dist(a) - dist(b); })
+
     Game.map.eachMob(function(mob){ if(mob.active) Game.scheduler.add(mob); });
     if(Game.shield) {
         Game.shieldLeft--;
@@ -226,6 +234,7 @@ Game.cast = function(event) {
         Status.log('Choose a direction');
         Game.targeting = function(tgt) {
             if(Game.map.adjacent(tgt, Game.player)){
+                Status.log('');
                 delete Game.targeting;
                 Game.mana -= spell.cost;
                 var dir = [tgt[0]-Game.player[0], tgt[1]-Game.player[1]];
@@ -250,6 +259,7 @@ Game.cast = function(event) {
         Game.targeting = function(tgt) {
             var mob = Game.map.get(tgt[0], tgt[1], 'mobs');
             if(mob && mob.can('kill')){
+                Status.log('');
                 delete Game.targeting;
                 Game.mana -= spell.cost;
                 Game.killMob(tgt[0], tgt[1], 'shove');
@@ -261,6 +271,7 @@ Game.cast = function(event) {
         Status.log('Teleport to where?');
         Game.targeting = function(tgt) {
             if(Game.map.empty(tgt[0], tgt[1])) {
+                Status.log('');
                 delete Game.targeting;
                 Game.mana -= spell.cost;
                 Game.player[0] = tgt[0];

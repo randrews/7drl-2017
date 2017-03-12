@@ -16,21 +16,28 @@ function Status(){
     Status.addSpell('Freeze', 'Freeze an enemy', 4);
     Status.addSpell('Teleport', 'Teleport yourself', 5);
     Status.addSpell('Shield', 'Protect yourself from attacks for 5 turns', 3);
+
+    Status.log('Welcome to Sevendral! Enjoy your quest');
 }
 
 Status.spells = {};
 
-Status.log = function(str){
+Status.log = function(str, tooltip){
+    if(tooltip){
+        Status.tipText = str;
+        Status.oldText = $('.log').text(); 
+    }
     $('.log').text(str);
 };
 
 Status.showSpellDescription = function(event) {
     spell = Status.spells[$(this).attr('name')];
-    Status.log(spell.cost+': '+spell.description);
+    Status.log(spell.cost+': '+spell.description, true);
 };
 
 Status.hideSpellDescription = function(event) {
-    Status.log('');
+    if($('.log').text() == Status.tipText)
+        Status.log(Status.oldText || '');
 };
 
 Status.addSpell = function(name, description, cost) {
