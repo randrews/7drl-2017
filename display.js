@@ -26,7 +26,7 @@ Display = function(map) {
         that.tick = (that.tick + 1) % 10;
         if(that.tick % 5 == 0)
             that.playerFrame = (that.playerFrame + 1) % 2;
-
+        if(Game.shield && that.tick%2 ==0) that.shieldFrame++;
         that.map.eachMob(function(mob){mob.animate(that.tick);});
 
         that.draw(true);
@@ -118,6 +118,10 @@ Display.opts = { width: 0,
                      'lightning1': [288, 288],
 
                      'ice': [288, 320],
+
+                     'shield0': [64, 352],
+                     'shield1': [32, 352],
+                     'shield2': [0, 352],
                  }
                };
 
@@ -171,7 +175,10 @@ Display.prototype.drawVisibleCell = function(x, y) {
     var sprites = [this.map.get(x, y)];
 
     if(mob) sprites.push(mob.mobSprite());
-    if(Game.player[0] == x && Game.player[1] == y) sprites.push(this.playerSprite());
+    if(Game.player[0] == x && Game.player[1] == y){
+        sprites.push(this.playerSprite());
+        if(Game.shield) sprites.push(this.shieldSprite());
+    }
     if(this.spell && this.spell.affects([x,y])) sprites.push(this.spell.sprite());
     if(effect) sprites.push(effect.sprite());
 
@@ -179,6 +186,10 @@ Display.prototype.drawVisibleCell = function(x, y) {
         this.display.draw(x - this.origin[0], y - this.origin[1], sprites, color);
     else
         this.display.draw(x - this.origin[0], y - this.origin[1], sprites, 'transparent', color);
+};
+
+Display.prototype.shieldSprite = function(){
+    return 'shield' + (this.shieldFrame % 3);
 };
 
 Display.prototype.drawRememberedCell = function(x, y) {

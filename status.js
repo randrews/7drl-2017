@@ -15,6 +15,7 @@ function Status(){
     Status.addSpell('Lightning', 'Kill adjacent enemies', 4);
     Status.addSpell('Freeze', 'Freeze an enemy', 4);
     Status.addSpell('Teleport', 'Teleport yourself', 5);
+    Status.addSpell('Shield', 'Protect yourself from attacks for 5 turns', 3);
 }
 
 Status.spells = {};

@@ -15,6 +15,7 @@ Game.init = function(){
     Game.maxMana = 5;
     Game.mana = 5;
     Game.dead = false;
+    Game.shield = false;
 
     /*
       This engine stuff deserves a little explanation:
@@ -104,6 +105,10 @@ Game.keyPress = function(event) {
 
 Game.prepareNextTurn = function() {
     Game.map.eachMob(function(mob){ if(mob.active) Game.scheduler.add(mob); });
+    if(Game.shield) {
+        Game.shieldLeft--;
+        if(Game.shieldLeft == 0) delete Game.shield;
+    }
     Game.scheduler.add(Game);
 };
 
@@ -174,6 +179,7 @@ Game.doMove = function(new_x, new_y) {
 };
 
 Game.attack = function(enemy) {
+    if(Game.shield) return;
     Game.health--;
     Game.display.addEffect(Game.player[0], Game.player[1], ['slashL', 'slashR'].random());
     if(Game.health <= 0) Game.gameover();
@@ -238,6 +244,7 @@ Game.cast = function(event) {
         Game.killMob(Game.player[0]-1, Game.player[1]+1);
         Game.killMob(Game.player[0], Game.player[1]+1);
         Game.killMob(Game.player[0]+1, Game.player[1]+1);
+        Game.enemyTurn();
     } else if(name == 'Freeze') {
         Status.log('Choose an enemy');
         Game.targeting = function(tgt) {
@@ -247,6 +254,7 @@ Game.cast = function(event) {
                 Game.mana -= spell.cost;
                 Game.killMob(tgt[0], tgt[1], 'shove');
                 Game.map.set(tgt[0], tgt[1], new Ice(), 'mobs')
+                Game.enemyTurn();
             }
         };        
     } else if(name == 'Teleport') {
@@ -259,11 +267,23 @@ Game.cast = function(event) {
                 Game.player[1] = tgt[1];
                 Game.display.addEffect(tgt[0], tgt[1], 'shove');
                 Game.map.updateVisibility(Game.player[0], Game.player[1]);
+                Game.enemyTurn();
                 Game.display.scroll();
                 Game.display.draw();
             }
         };
+    } else if(name == 'Shield') {
+        Game.shield = true;
+        Game.display.shieldFrame = 0;
+        Game.shieldLeft = 5;
+        Game.mana -= spell.cost;
     }
+};
+
+Game.enemyTurn = function() {
+    Game.prepareNextTurn();
+    Game.engine.unlock();
+    Game.display.draw();
 };
 
 $('document').ready(Game.init);

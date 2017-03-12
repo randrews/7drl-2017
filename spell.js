@@ -16,6 +16,7 @@ Bullet.prototype.act = function() {
     this.position[1] += this.direction[1];
     if(!Game.display.map.navigable(this.position[0], this.position[1])) {
         this.active = false;
+        Game.enemyTurn();
         return;
     }
 
