@@ -122,7 +122,8 @@ Game.doAttack = function(new_x, new_y) {
     var tgtx = new_x*2 - Game.player[0];
     var tgty = new_y*2 - Game.player[1];
     var mob = Game.map.get(tgtx, tgty, 'mobs');
-    if(Game.map.navigable(new_x, new_y) && mob && mob.can('kill')){
+    var enter_mob = Game.map.get(new_x, new_y, 'mobs');
+    if((Game.map.empty(new_x, new_y) || enter_mob && enter_mob.can('enter')) && mob && mob.can('kill')){
         Game.killMob(tgtx, tgty);
         if(Game.mana < Game.maxMana) Game.mana++;
     }
@@ -320,8 +321,8 @@ Game.initMap = function() {
 };
 
 Game.nextLevel = function() {
-    Game.initMap();
     Game.display.setBiome(Game.display.currentBiome + 1);
+    Game.initMap();
     Game.maxHealth++;
     Game.health++;
     Status.log('Welcome to level ' + (Game.display.currentBiome+1));

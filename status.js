@@ -11,7 +11,7 @@ function Status(){
     };
     Status.resetSpells();
 
-    Status.log('Welcome to Sevendral! Enjoy your quest');
+    Status.log('Welcome to the caverns. Enjoy your quest!');
 }
 
 Status.spells = {};
