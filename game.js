@@ -2,6 +2,7 @@ Game = {};
 
 Game.init = function(){
     $('.gameover').hide();
+    Game.currentLevel = 0;
     Game.initMap();
     Game.display = new Display(Game.map);
     Game.scheduler = new ROT.Scheduler.Simple();
@@ -130,9 +131,7 @@ Game.doAttack = function(new_x, new_y) {
 Game.killMob = function(x, y, effect) {
     var mob = Game.map.get(x, y, 'mobs');
     if(!mob) return;
-    Game.map.set(x, y, null, 'mobs');
-    var idx = Game.map.mobs.findIndex(function(e){ return e === mob; });
-    Game.map.mobs.splice(idx, 1);
+    Game.map.removeMob(mob);
     Game.display.addEffect(x, y, effect || 'kill');
 };
 
@@ -323,6 +322,8 @@ Game.initMap = function() {
 Game.nextLevel = function() {
     Game.initMap();
     Game.display.setBiome(Game.display.currentBiome + 1);
+    Game.maxHealth++;
+    Game.health++;
     Status.log('Welcome to level ' + (Game.display.currentBiome+1));
     Game.display.map = Game.map;
     Game.display.scroll();

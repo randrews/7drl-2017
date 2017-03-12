@@ -46,12 +46,25 @@ Map = function(w, h){
         var stairs = new StairsDown(stairsDown[0], stairsDown[1]);
         this.addMob(stairsDown, stairs);
     }
+
+    for(var n=0; n<3; n++){
+        var point = this.random(function(x, y){ return that.empty(x, y); });
+        var mob = new Scroll(point[0], point[1]);
+        this.addMob(point, mob);
+    }
 };
 
 Map.prototype.addMob = function(pt, mob){
     this.set(pt[0], pt[1], mob, 'mobs');
     this.mobs.push(mob);
 
+};
+
+Map.prototype.removeMob = function(mob){
+    if(!mob) return;
+    this.set(mob.x, mob.y, null, 'mobs');
+    var idx = this.mobs.findIndex(function(e){ return e === mob; });
+    this.mobs.splice(idx, 1);
 };
 
 Map.prototype.clear = function(layer){
@@ -88,7 +101,7 @@ Map.prototype.empty = function(x, y){
 Map.prototype.navigable = function(x, y){
     var tile = this.get(x, y);
     var mob = this.get(x, y, 'mobs');
-    return tile && tile.match('^floor') || (!mob || mob.can('enter'));
+    return tile && tile.match('^floor') && (!mob || mob.can('enter') || mob.can('shove'));
 };
 
 Map.prototype.adjacent = function(a, b){

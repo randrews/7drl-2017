@@ -106,3 +106,62 @@ StairsUp.prototype.can = function(action){
     return action == 'enter';
 };
 StairsUp.prototype.enter = function(){}
+
+//////////////////////////////////////////////////
+
+Scroll = function(x, y) {
+    this.x = x; this.y = y;
+    this.active = true;
+};
+
+Scroll.prototype.mobSprite = function(){ return 'scroll'; };
+Scroll.prototype.act = function() {};
+Scroll.prototype.awaken = function() {};
+Scroll.prototype.animate = function(tick) {};
+Scroll.prototype.can = function(action){
+    return action == 'enter';
+};
+Scroll.prototype.enter = function(){
+    var that = this;
+    var spells = [
+        ['Heal', 'Heal 1 life', 2],
+        ['Fire', 'Shoot a fireball', 5],
+        ['Lightning', 'Kill adjacent enemies', 5],
+        ['Freeze', 'Freeze an enemy', 5],
+        ['Teleport', 'Teleport yourself', 5],
+        ['Shield', 'Protect yourself from attacks for 5 turns', 3]
+    ];
+
+    var spell = spells.random();
+
+    var str = 'You have found a scroll: '+ spell[0];
+    
+    str += '<br/>';
+
+    if(!Status.spells[spell[0]]) {
+        if(Status.spellCount < 3) {
+            str += '<br/>' + '<a href="#" action="add">Keep it</a>';
+        } else {
+            for(var name in Status.spells)
+                str += '<br/>' + '<a href="#" action="'+name+'">Replace "'+name+'"</a>';
+        }
+    }
+
+    str += '<br/>' + '<a href="#" action="convert">Increase your mana</a>';
+    $('.message').html(str);
+    $('.scroll').show();
+    $('.scroll a').click(function(event){
+        var action = $(this).attr('action');
+        if(action == 'add') {
+            Status.addSpell.apply(Status, spell);
+        } else if(action == 'convert') {
+            if(Game.maxMana < 16) Game.maxMana++;
+            if(Game.mana < Game.maxMana) Game.mana++;
+        } else {
+            Status.removeSpell(action);
+            Status.addSpell.apply(Status, spell);
+        }
+        $('.scroll').hide();
+        Game.map.removeMob(that);
+    });
+}

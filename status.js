@@ -9,13 +9,9 @@ function Status(){
         that.display = new ROT.Display(Status.opts);
         $('.status').append(that.display.getContainer());
     };
+    Status.spellCount = 0;
 
-    Status.addSpell('Heal', 'Heal 1 life', 3);
-    Status.addSpell('Fire', 'Shoot a fireball', 5);
-    Status.addSpell('Lightning', 'Kill adjacent enemies', 4);
-    Status.addSpell('Freeze', 'Freeze an enemy', 4);
-    Status.addSpell('Teleport', 'Teleport yourself', 5);
-    Status.addSpell('Shield', 'Protect yourself from attacks for 5 turns', 3);
+    Status.addSpell('Heal', 'Heal 1 life', 2);
 
     Status.log('Welcome to Sevendral! Enjoy your quest');
 }
@@ -43,6 +39,7 @@ Status.hideSpellDescription = function(event) {
 Status.addSpell = function(name, description, cost) {
     if(Status.spells[name]) return;
     Status.spells[name] = { name: name, description: description, cost: cost };
+    Status.spellCount++;
     var button = document.createElement('button');
     Status.spells[name].button = button;
     $(button).text(name);
@@ -51,6 +48,13 @@ Status.addSpell = function(name, description, cost) {
     $(button).on('mouseenter', Status.showSpellDescription);
     $(button).on('mouseleave', Status.hideSpellDescription);
     $(button).on('click', Game.cast);
+};
+
+Status.removeSpell = function(name) {
+    if(!Status.spells[name]) return;
+    Status.spellCount--;
+    $(Status.spells[name].button).remove();
+    delete Status.spells[name];
 };
 
 Status.opts = { width: 16,

@@ -3,7 +3,7 @@ Display = function(map) {
     Display.opts.tileSet.src = 'tiny_dungeon.png';
 
     this.status = new Status();
-    this.currentBiome = 0;
+    this.setBiome(0);
     this.effects = {};
     this.spell = null;
     this.dirty = {};
@@ -124,11 +124,13 @@ Display.opts = { width: 0,
                      'shield0': [64, 352],
                      'shield1': [32, 352],
                      'shield2': [0, 352],
+
+                     'scroll': [96, 352],
                  }
                };
 
 Display.prototype.busy = function() {
-    return this.spell;
+    return this.spell || $('.scroll').is(':visible');
 };
 
 Display.prototype.playerSprite = function() {
